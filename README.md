@@ -55,7 +55,7 @@ My focus: **ROS2 navigation stacks, thermal person detection, sim-to-real transf
 
 ## Projects
 
-### [Drone Tracker](https://github.com/Gruzver/drone_tracker) — Thermal SAR perception pipeline
+### [Drone Tracker](https://github.com/Gruzver/drone-tracker) — Thermal SAR perception pipeline
 > Real-time person detection and GPS geolocation from thermal drone video
 
 ROS2 pipeline processing DJI thermal footage to detect, track, and geolocate people in real time. Built for search-and-rescue scenarios.
