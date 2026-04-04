@@ -107,18 +107,6 @@ Robot arm workspace with Gazebo simulation, MoveIt 2 motion planning, and real h
 
 ---
 
-## GitHub Stats
-
-<div align="center">
-
-[![Gruzver's GitHub stats](https://github-readme-stats.vercel.app/api?username=Gruzver&show_icons=true&theme=default&hide_border=true&count_private=true)](https://github-readme-stats.vercel.app/api?username=Gruzver&show_icons=true&hide_border=true&count_private=true)
-
-![Top Languages](https://github-readme-stats.vercel.app/api/top-langs/?username=Gruzver&layout=compact&theme=default&hide_border=true&langs_count=6)
-
-</div>
-
----
-
 ## Current Research
 
 **Multi-robot SAR system** · PROCIENCIA E009-2026 · PUCP, Lima, Peru
