@@ -91,6 +91,7 @@ function looksLikePhoto({ data, width }, mask, r) {
   let nonBg = 0;
   let count = 0;
   const seen = new Set();
+  const coarse = new Map();
   const stepX = Math.max(1, Math.floor(r.w / 160));
   const stepY = Math.max(1, Math.floor(r.h / 160));
   for (let y = r.y; y < r.y + r.h; y += stepY) {
@@ -100,9 +101,14 @@ function looksLikePhoto({ data, width }, mask, r) {
       if (!mask[p]) nonBg++;
       const i = p * 4;
       seen.add(((data[i] >> 2) << 12) | ((data[i + 1] >> 2) << 6) | (data[i + 2] >> 2));
+      const k = ((data[i] >> 4) << 8) | ((data[i + 1] >> 4) << 4) | (data[i + 2] >> 4);
+      coarse.set(k, (coarse.get(k) || 0) + 1);
     }
   }
-  return nonBg / count >= 0.75 && seen.size >= 200;
+  // photos spread over many colours (one colour covers ~5-10%); flat UI widgets with a
+  // small avatar inside are dominated by a single colour (~65%+)
+  const dominant = Math.max(...coarse.values()) / count;
+  return nonBg / count >= 0.75 && seen.size >= 200 && dominant < 0.5;
 }
 
 export function detectPhotoRects(img, { palette } = {}) {
@@ -113,8 +119,9 @@ export function detectPhotoRects(img, { palette } = {}) {
   cut(mask, width, { x: 0, y: 0, w: width, h: height }, leaves);
   const minW = Math.max(80, Math.round(width * 0.07));
   const minH = Math.max(60, Math.round(height * 0.03));
+  const minArea = width * height * 0.01; // skips avatars, buttons and other small colourful widgets
   return leaves
-    .filter((r) => r.w >= minW && r.h >= minH && r.w / r.h <= 5 && r.h / r.w <= 4)
+    .filter((r) => r.w >= minW && r.h >= minH && r.w * r.h >= minArea && r.w / r.h <= 5 && r.h / r.w <= 4)
     .filter((r) => looksLikePhoto(img, mask, r))
     .sort((a, b) => a.y - b.y || a.x - b.x);
 }

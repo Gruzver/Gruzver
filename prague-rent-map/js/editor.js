@@ -124,7 +124,8 @@ export function createEditor() {
     set('pets', p.pets);
     const place = findPlace(s.ocrText)?.name || '';
     s.hints = { street: p.street, metro: p.metro, place, district: p.district };
-    set('title', [p.layout, p.size ? `${p.size} m²` : '', place || p.district].filter(Boolean).join(' · ') || p.title);
+    const streetName = p.street.replace(/,.*$/, '').replace(/\s+\d[\w/]*$/, '').trim();
+    set('title', [p.layout, p.size ? `${p.size} m²` : '', place || p.district || streetName].filter(Boolean).join(' · ') || p.title);
     set('address', p.street || (p.metro ? `Metro ${p.metro}` : '') || place || p.district);
     set('conditions', p.extras.join('\n'));
   }

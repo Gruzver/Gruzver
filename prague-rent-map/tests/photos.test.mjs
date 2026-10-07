@@ -59,3 +59,13 @@ test('text only produces no photos', () => {
   textLines(img, 30, 30, 800, 10);
   assert.equal(detectPhotoRects(img).length, 0);
 });
+
+test('a small grey pill with a colourful avatar (comment bar) is not a photo', () => {
+  const img = makeImage(1000, 1200, [255, 255, 255]);
+  fillRect(img, 30, 1100, 190, 70, () => [228, 230, 235]);
+  fillRect(img, 40, 1105, 60, 60, photo([90, 120, 200]));
+  fillRect(img, 40, 100, 920, 600, photo([190, 150, 110]));
+  const rects = detectPhotoRects(img);
+  assert.equal(rects.length, 1, JSON.stringify(rects));
+  assert.ok(near(rects[0], 40, 100, 920, 600));
+});

@@ -87,3 +87,39 @@ test('offline fallback and query building', () => {
   assert.equal(q[0], 'Vinohradská 125, Vinohrady, Praha');
   assert.ok(q.length <= 4);
 });
+
+test('real OCR output of an English shared-room post (January to June, all inclusive)', () => {
+  const p = parseListing(`8:02 četl] ll CH
+X Posts O &.
+4 SHARED APARTMENT ON ZELIVSKY — JANUARY
+TO JUNE | 7,940 CZK ALL INCLUSIVE
+From January to June, | am offering a place in a
+shared room in a flat on Zelivského because | am
+moving to Finland for Erasmus.
+The apartment is for 4 boys, the rooms are always for
+two people. We are looking for a student, ideally
+someone from VŠE - Želivského is very well
+accessible to the center and public transport thanks
+to the metro and public transport.
+© Location: Želivského, Prague
+Availability: January- June
++8 Apartment: 4 boys, rooms for two
+@ Price: 7,940 CZK monthly including all fees and
+utilities.
+If interested, please send a message, | will send
+photos, exact address and more information.`);
+  assert.equal(p.price, 7940);
+  assert.equal(p.currency, 'CZK');
+  assert.equal(p.utilities, 'included');
+  assert.equal(p.layout, 'Habitación');
+  assert.equal(p.street, 'Želivského, Prague');
+  assert.equal(p.metro, '');
+  assert.equal(p.available, 'January–June');
+  assert.ok(p.extras.includes('Habitación compartida con otra persona'));
+  assert.ok(p.extras.includes('Prefieren estudiantes'));
+});
+
+test('availability as a month range in Czech and English', () => {
+  assert.equal(parseListing('Available from September to January').available, 'September–January');
+  assert.equal(parseListing('Volné od 1.12.').available, '1.12');
+});

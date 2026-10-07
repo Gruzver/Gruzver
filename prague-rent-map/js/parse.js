@@ -56,18 +56,22 @@ export function findPrices(text) {
   return found.sort((a, b) => a.index - b.index);
 }
 
-const MONTH_RE = '(?:led|uno|bre|dub|kve|cerv|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec|zari|rij|pro|srp)[a-z]*';
+const MONTH_RE = '(?:led|uno|brez|dub|kvet|cerv|srp|zari|rij|listopad|prosin|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*';
 
 function findAvailable(text) {
   const n = norm(text);
   if (/\b(ihned|immediately|asap|available now|volne ihned|disponible ya)\b/.test(n)) return 'Inmediato';
-  const kw = /(available(?: from)?|volne od|volny od|od|from|dostupne od|nastehovani|move[- ]?in|entry date|disponible desde)\s*[:\-]?\s*/g;
+  const kw = /(availability|available(?: from)?|volne od|volny od|od|from|dostupne od|nastehovani|move[- ]?in|entry date|disponible desde)\s*[:\-]?\s*/g;
+  const range = new RegExp(`^(${MONTH_RE})\\s*(?:-|–|—|to|az|do|until)\\s*(${MONTH_RE})`);
+  const cap = (w) => w[0].toUpperCase() + w.slice(1);
   const date = new RegExp(
     `(\\d{1,2}\\s?[./]\\s?\\d{1,2}(?:\\s?[./]\\s?\\d{2,4})?\\.?|\\d{1,2}\\.?\\s*${MONTH_RE}\\s*\\d{0,4}|${MONTH_RE}\\s+\\d{1,2}(?:\\s*,?\\s*\\d{4})?)`
   );
   let m;
   while ((m = kw.exec(n))) {
     const tail = n.slice(m.index + m[0].length, m.index + m[0].length + 28);
+    const r = tail.match(range);
+    if (r) return `${cap(r[1])}–${cap(r[2])}`;
     const d = tail.match(date);
     if (d && d.index <= 2) return d[1].trim().replace(/[.,;]+$/, '');
   }
@@ -110,8 +114,8 @@ export function findStreet(text) {
 function findMetro(text) {
   const stop = new Set(['station', 'metro', 'praha', 'prague', 'tram', 'bus', 'stanice', 'stop', 'line']);
   const name = String.raw`(\p{Lu}[\p{L}]+(?:[ -]\p{Lu}[\p{L}]+)?)`;
-  const a = text.match(new RegExp(String.raw`(?:metr[oau]|stanic[ei]|station|Ⓜ️?)\s*(?:metra\s*)?[:\-]?\s*${name}`, 'iu'));
-  const b = text.match(new RegExp(String.raw`${name}\s+(?:metro|station)\b`, 'u'));
+  const a = text.match(new RegExp(String.raw`(?:[Mm]etr[oau]|[Ss]tanic[ei]|[Ss]tation|Ⓜ️?)[ \t]*(?:metra[ \t]*)?[:\-]?[ \t]*${name}`, 'u'));
+  const b = text.match(new RegExp(String.raw`${name}[ \t]+(?:metro|station)\b`, 'u'));
   for (const m of [a, b]) {
     if (m && !stop.has(norm(m[1]))) return m[1];
   }
@@ -176,6 +180,10 @@ export function parseListing(raw) {
   if (/short[- ]?term|kratkodob/.test(n)) extras.push('Alquiler de corto plazo');
   else if (/long[- ]?term|dlouhodob/.test(n)) extras.push('Alquiler de largo plazo');
   if (/wi-?fi|internet v cene|internet included/.test(n)) extras.push('Wi-Fi / internet');
+  if (/shared room|rooms? (?:are )?(?:always )?for (?:two|2)|double room|sdileny pokoj|pokoj pro (?:dva|2)|2 (?:people|persons) (?:in|per) (?:the )?room/.test(n)) extras.push('Habitación compartida con otra persona');
+  if (/shared (?:flat|apartment)|flat ?share|spolubydl|sdilen\w* byt/.test(n)) extras.push('Piso compartido');
+  if (/(?:prefer|looking for|ideally|hledame|hledam|hledame)[^.\n]{0,40}student|pro student|studen\w+ (?:only|preferred)/.test(n)) extras.push('Prefieren estudiantes');
+  if (/non[- ]?smoker|no smoking|nekurak|nekurac/.test(n)) extras.push('No fumadores');
 
   const layout = findLayout(text, n);
   const size = findSize(text);
